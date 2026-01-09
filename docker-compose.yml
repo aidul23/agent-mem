@@ -1,0 +1,19 @@
+services:
+  hindsight:
+    image: ghcr.io/vectorize-io/hindsight:latest
+    container_name: hindsight-server
+    ports:
+      - "8888:8888"
+      - "9999:9999"
+    environment:
+      - HINDSIGHT_API_LLM_API_KEY=${OPENAI_API_KEY}
+      - HINDSIGHT_API_LLM_MODEL=gpt-4o-mini
+      - TRANSFORMERS_CACHE=/home/hindsight/.cache/huggingface
+      - HF_HOME=/home/hindsight/.cache/huggingface
+      - HOME=/home/hindsight
+    volumes:
+      - ${HOME}/.hindsight-docker:/home/hindsight/.pg0
+      - ${HOME}/.hindsight-cache:/home/hindsight/.cache
+    restart: unless-stopped
+    user: "501:20"  # Use your user ID:group ID to avoid permission issues
+

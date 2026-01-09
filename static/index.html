@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GPT-Lab Agent with Hindsight Memory</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 800px;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .consent-banner {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .consent-banner h3 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+
+        .consent-banner p {
+            color: #856404;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+
+        .consent-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-allow {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-allow:hover {
+            background: #218838;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+        }
+
+        .btn-deny {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-deny:hover {
+            background: #c82333;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .status-enabled {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-disabled {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .chat-messages {
+            min-height: 300px;
+            max-height: 500px;
+            overflow-y: auto;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 20px;
+            background: #f9f9f9;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .message {
+            padding: 12px 16px;
+            border-radius: 12px;
+            max-width: 80%;
+            word-wrap: break-word;
+            line-height: 1.5;
+        }
+
+        .message.user {
+            background: #667eea;
+            color: white;
+            align-self: flex-end;
+            margin-left: auto;
+        }
+
+        .message.assistant {
+            background: #e0e0e0;
+            color: #333;
+            align-self: flex-start;
+        }
+
+        .message-label {
+            font-size: 11px;
+            font-weight: 600;
+            margin-bottom: 5px;
+            opacity: 0.8;
+        }
+
+        .input-container {
+            display: flex;
+            gap: 10px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn-send {
+            background: #667eea;
+            color: white;
+            padding: 12px 24px;
+        }
+
+        .btn-send:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-send:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>GPT-Lab Agent with Hindsight Memory</h1>
+        <p class="subtitle">A LangChain-based agent with long-term memory and explicit consent</p>
+
+        <div id="consentBanner" class="consent-banner">
+            <h3>🔒 Data Storage Consent</h3>
+            <p>This agent can store your conversations to provide personalized responses. Your data will only be stored if you explicitly consent.</p>
+            <div class="consent-buttons">
+                <button class="btn-allow" onclick="setConsent(true)">Allow Memory Storage</button>
+                <button class="btn-deny" onclick="setConsent(false)">Deny Memory Storage</button>
+            </div>
+        </div>
+
+        <div class="chat-container">
+            <div>
+                <strong>Memory Status:</strong>
+                <span id="memoryStatus" class="status-badge status-disabled">Disabled</span>
+            </div>
+            <div class="chat-messages" id="chatMessages">
+                <div class="message assistant">
+                    <div class="message-label">Assistant</div>
+                    <div>Hello! I'm your GPT-Lab assistant. Please set your memory consent preference above to get started.</div>
+                </div>
+            </div>
+            <div class="input-container">
+                <input 
+                    type="text" 
+                    id="messageInput" 
+                    placeholder="Type your message here..."
+                    onkeypress="handleKeyPress(event)"
+                >
+                <button class="btn-send" id="sendButton" onclick="sendMessage()">Send</button>
+            </div>
+            <div id="errorContainer"></div>
+        </div>
+    </div>
+
+    <script>
+        // Use relative URLs since frontend is served from the same Flask app
+        const API_BASE = '';
+        const USER_ID = 'demo-user-' + Math.random().toString(36).substr(2, 9);
+
+        // Check initial consent status
+        async function checkConsentStatus() {
+            try {
+                // First check if server is running
+                const healthResponse = await fetch(`${API_BASE}/health`);
+                if (!healthResponse.ok) {
+                    throw new Error('Server health check failed');
+                }
+                
+                const response = await fetch(`${API_BASE}/user/${USER_ID}/status`);
+                if (!response.ok) {
+                    throw new Error('Failed to get user status');
+                }
+                
+                const data = await response.json();
+                updateMemoryStatus(data.allow_memory);
+                if (data.allow_memory) {
+                    document.getElementById('consentBanner').style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error checking consent:', error);
+                showError('Cannot connect to server. Make sure Flask is running: python app.py');
+            }
+        }
+
+        async function setConsent(allow) {
+            try {
+                const response = await fetch(`${API_BASE}/consent`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        user_id: USER_ID,
+                        allow: allow
+                    })
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({ error: response.statusText }));
+                    throw new Error(errorData.error || `Server error: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                updateMemoryStatus(data.allow_memory);
+                document.getElementById('consentBanner').style.display = 'none';
+                addMessage('system', `Memory storage ${data.allow_memory ? 'enabled' : 'disabled'}. You can now chat with the agent.`);
+            } catch (error) {
+                console.error('Consent error:', error);
+                showError('Failed to set consent: ' + error.message + '. Make sure the Flask server is running on port 5000.');
+            }
+        }
+
+        function updateMemoryStatus(enabled) {
+            const statusEl = document.getElementById('memoryStatus');
+            statusEl.textContent = enabled ? 'Enabled' : 'Disabled';
+            statusEl.className = 'status-badge ' + (enabled ? 'status-enabled' : 'status-disabled');
+        }
+
+        function addMessage(role, content) {
+            const messagesDiv = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${role}`;
+            messageDiv.innerHTML = `
+                <div class="message-label">${role === 'user' ? 'You' : 'Assistant'}</div>
+                <div>${content}</div>
+            `;
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+
+            const sendButton = document.getElementById('sendButton');
+            sendButton.disabled = true;
+            sendButton.innerHTML = 'Sending<span class="loading"></span>';
+
+            addMessage('user', message);
+            input.value = '';
+            clearError();
+
+            try {
+                const response = await fetch(`${API_BASE}/chat`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        user_id: USER_ID,
+                        message: message
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({ error: response.statusText }));
+                    throw new Error(errorData.error || `Server error: ${response.status}`);
+                }
+
+                const data = await response.json();
+                
+                if (data.error) {
+                    showError(data.error);
+                } else {
+                    addMessage('assistant', data.reply);
+                }
+            } catch (error) {
+                console.error('Chat error:', error);
+                showError('Failed to send message: ' + error.message + '. Make sure the Flask server is running.');
+            } finally {
+                sendButton.disabled = false;
+                sendButton.textContent = 'Send';
+            }
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        function showError(message) {
+            const errorContainer = document.getElementById('errorContainer');
+            errorContainer.innerHTML = `<div class="error">${message}</div>`;
+        }
+
+        function clearError() {
+            document.getElementById('errorContainer').innerHTML = '';
+        }
+
+        // Initialize
+        checkConsentStatus();
+    </script>
+</body>
+</html>
+
