@@ -8,6 +8,13 @@ A LangChain-based agent that uses Hindsight as long-term memory with explicit us
 - **Hindsight Memory**: Long-term memory storage via Hindsight
 - **Explicit Consent**: Only stores user data after explicit consent
 - **Web Demo**: Beautiful, modern web interface for testing
+- **Enterprise Mode**: Advanced features for company knowledge management
+  - Multi-bank memory structure (company, product, department, user)
+  - Document ingestion (PDF, TXT, MD)
+  - Rule versioning and update tracking
+  - Intelligent memory prioritization (recency, importance)
+  - Memory reflection and summarization
+  - Admin panel for knowledge base management
 
 ## Prerequisites
 
@@ -31,7 +38,7 @@ docker-compose up -d
 ./start.sh
 # or: python app.py
 
-# 5. Open http://localhost:5000 in your browser
+# 5. Open http://localhost:5001 in your browser
 ```
 
 ## Setup
@@ -95,11 +102,11 @@ In a new terminal:
 python app.py
 ```
 
-The web interface will be available at `http://localhost:5000`
+The web interface will be available at `http://localhost:5001`
 
 ## Usage
 
-1. Open `http://localhost:5000` in your browser
+1. Open `http://localhost:5001` in your browser
 2. Choose whether to allow memory storage (consent is required)
 3. Start chatting with the agent
 4. The agent will recall relevant memories and store new interactions (if consent was given)
@@ -152,6 +159,16 @@ agent-mem/
 - **Storage**: Replace in-memory `USER_DB` in `auth_and_profile.py` with a real database
 - **UI**: Customize `static/index.html` for your needs
 
+## Enterprise Features
+
+For company use with DFX rules, standards, and intelligent memory tracking, see [ENTERPRISE_FEATURES.md](ENTERPRISE_FEATURES.md).
+
+Quick start for enterprise mode:
+1. Set `USE_ENTERPRISE_MODE=true` in `.env`
+2. Set `COMPANY_ID` and `ADMIN_TOKEN`
+3. Access admin panel at `/admin`
+4. Ingest company documents and rules
+
 ## Notes
 
 - This is a demo implementation. For production:
@@ -160,6 +177,7 @@ agent-mem/
   - Add error handling and logging
   - Consider rate limiting
   - Add input validation and sanitization
+  - Use secure admin tokens (not default "admin-secret")
 
 ## References
 

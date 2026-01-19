@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise Admin - Document Management</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 30px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .tab {
+            padding: 12px 24px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+            font-weight: 600;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        input[type="text"],
+        input[type="file"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .file-upload-area {
+            border: 2px dashed #e0e0e0;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .file-upload-area:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .file-upload-area.dragover {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .auth-section {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .auth-section input {
+            margin-top: 10px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 15px 0;
+            display: none;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            width: 0%;
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .upload-status {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .upload-status.uploading {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+            display: block;
+        }
+
+        .upload-status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+
+        .upload-status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Enterprise Admin Panel</h1>
+        <p class="subtitle">Manage company knowledge base, documents, and rules</p>
+
+        <div class="auth-section">
+            <h3>Authentication</h3>
+            <p>Enter admin token to access management features</p>
+            <input type="password" id="adminToken" placeholder="Admin Token" />
+            <button class="btn-primary" onclick="setAuthToken()" style="margin-top: 10px;">Authenticate</button>
+            <span id="authStatus"></span>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('upload')">Upload Document</button>
+            <button class="tab" onclick="switchTab('text')">Ingest Text</button>
+            <button class="tab" onclick="switchTab('update')">Update Rule</button>
+            <button class="tab" onclick="switchTab('reflect')">Reflect & Summarize</button>
+        </div>
+
+        <!-- Upload Document Tab -->
+        <div id="upload" class="tab-content active">
+            <h2>Upload Company Document</h2>
+            <form id="uploadForm">
+                <div class="form-group">
+                    <label>Document File (PDF, TXT, MD)</label>
+                    <div class="file-upload-area" id="fileUploadArea">
+                        <p>Click to select or drag and drop</p>
+                        <input type="file" id="documentFile" accept=".pdf,.txt,.md" style="display: none;" />
+                    </div>
+                    <p id="fileName" style="margin-top: 10px; color: #666;"></p>
+                </div>
+
+                <div class="form-group">
+                    <label>Document Type</label>
+                    <select id="docType" required>
+                        <option value="dfx_rule">DFX Rule</option>
+                        <option value="standard">Standard</option>
+                        <option value="guideline">Guideline</option>
+                        <option value="policy">Policy</option>
+                        <option value="specification">Specification</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Version</label>
+                    <input type="text" id="docVersion" value="1.0" required />
+                </div>
+
+                <div class="form-group">
+                    <label>Importance</label>
+                    <select id="docImportance" required>
+                        <option value="critical">Critical</option>
+                        <option value="high" selected>High</option>
+                        <option value="normal">Normal</option>
+                        <option value="low">Low</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn-primary" id="uploadButton">Upload & Ingest</button>
+            </form>
+            <div class="progress-bar" id="uploadProgress">
+                <div class="progress-fill" id="progressFill">0%</div>
+            </div>
+            <div class="upload-status" id="uploadStatus"></div>
+            <div id="uploadResult"></div>
+        </div>
+
+        <!-- Ingest Text Tab -->
+        <div id="text" class="tab-content">
+            <h2>Ingest Text Content</h2>
+            <form id="textForm">
+                <div class="form-group">
+                    <label>Content</label>
+                    <textarea id="textContent" placeholder="Paste or type content here..." required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Document Type</label>
+                    <select id="textType" required>
+                        <option value="dfx_rule">DFX Rule</option>
+                        <option value="standard">Standard</option>
+                        <option value="guideline">Guideline</option>
+                        <option value="policy">Policy</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Version</label>
+                    <input type="text" id="textVersion" value="1.0" required />
+                </div>
+
+                <div class="form-group">
+                    <label>Importance</label>
+                    <select id="textImportance" required>
+                        <option value="critical">Critical</option>
+                        <option value="high" selected>High</option>
+                        <option value="normal">Normal</option>
+                        <option value="low">Low</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Source (optional)</label>
+                    <input type="text" id="textSource" placeholder="e.g., Manual Input, Document Name" />
+                </div>
+
+                <button type="submit" class="btn-primary">Ingest Content</button>
+            </form>
+            <div id="textResult"></div>
+        </div>
+
+        <!-- Update Rule Tab -->
+        <div id="update" class="tab-content">
+            <h2>Update Company Rule</h2>
+            <form id="updateForm">
+                <div class="form-group">
+                    <label>Rule ID</label>
+                    <input type="text" id="ruleId" placeholder="e.g., DFX-001" required />
+                </div>
+
+                <div class="form-group">
+                    <label>New Content</label>
+                    <textarea id="ruleContent" placeholder="Enter updated rule content..." required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>New Version</label>
+                    <input type="text" id="ruleVersion" placeholder="e.g., 2.0" required />
+                </div>
+
+                <div class="form-group">
+                    <label>Change Summary</label>
+                    <textarea id="ruleSummary" placeholder="Brief summary of changes..." rows="3"></textarea>
+                </div>
+
+                <button type="submit" class="btn-primary">Update Rule</button>
+            </form>
+            <div id="updateResult"></div>
+        </div>
+
+        <!-- Reflect Tab -->
+        <div id="reflect" class="tab-content">
+            <h2>Reflect & Summarize</h2>
+            <form id="reflectForm">
+                <div class="form-group">
+                    <label>Topic</label>
+                    <input type="text" id="reflectTopic" placeholder="e.g., DFX rules for PCB design" required />
+                </div>
+
+                <div class="form-group">
+                    <label>Knowledge Base</label>
+                    <select id="reflectBank" required>
+                        <option value="company">Company Knowledge Base</option>
+                        <option value="product">Product Knowledge Base</option>
+                    </select>
+                </div>
+
+                <div class="form-group" id="productIdGroup" style="display: none;">
+                    <label>Product ID</label>
+                    <input type="text" id="reflectProductId" placeholder="Product ID" />
+                </div>
+
+                <button type="submit" class="btn-primary">Generate Reflection</button>
+            </form>
+            <div id="reflectResult"></div>
+        </div>
+    </div>
+
+    <script>
+        let authToken = '';
+
+        async function setAuthToken() {
+            const tokenInput = document.getElementById('adminToken');
+            const token = tokenInput.value.trim();
+            const status = document.getElementById('authStatus');
+            const authButton = event.target;
+            
+            if (!token) {
+                status.innerHTML = '<span class="status-badge status-error">Please enter a token</span>';
+                authToken = '';
+                return;
+            }
+
+            // Show checking status
+            authButton.disabled = true;
+            authButton.textContent = 'Checking...';
+            status.innerHTML = '<span style="color: #666;">Verifying token...</span>';
+
+            // Test the token using the verify endpoint
+            try {
+                const response = await fetch('/admin/verify-token', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();
+                
+                if (response.ok && data.valid) {
+                    // Token is valid
+                    authToken = token;
+                    status.innerHTML = '<span class="status-badge status-success">✓ Authenticated</span>';
+                } else {
+                    // Token is invalid
+                    status.innerHTML = '<span class="status-badge status-error">✗ Invalid Token</span>';
+                    authToken = '';
+                }
+            } catch (error) {
+                // Network error
+                status.innerHTML = '<span class="status-badge status-error">Could not verify (network error)</span>';
+                authToken = '';
+            } finally {
+                authButton.disabled = false;
+                authButton.textContent = 'Authenticate';
+            }
+        }
+
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // File upload handling
+        const fileUploadArea = document.getElementById('fileUploadArea');
+        const fileInput = document.getElementById('documentFile');
+
+        fileUploadArea.addEventListener('click', () => fileInput.click());
+        fileUploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            fileUploadArea.classList.add('dragover');
+        });
+        fileUploadArea.addEventListener('dragleave', () => {
+            fileUploadArea.classList.remove('dragover');
+        });
+        fileUploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            fileUploadArea.classList.remove('dragover');
+            if (e.dataTransfer.files.length > 0) {
+                fileInput.files = e.dataTransfer.files;
+                document.getElementById('fileName').textContent = e.dataTransfer.files[0].name;
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                document.getElementById('fileName').textContent = e.target.files[0].name;
+            }
+        });
+
+        // Reflect bank type change
+        document.getElementById('reflectBank').addEventListener('change', (e) => {
+            const productIdGroup = document.getElementById('productIdGroup');
+            if (e.target.value === 'product') {
+                productIdGroup.style.display = 'block';
+            } else {
+                productIdGroup.style.display = 'none';
+            }
+        });
+
+        // Upload form
+        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!authToken) {
+                alert('Please authenticate first');
+                return;
+            }
+
+            const uploadButton = document.getElementById('uploadButton');
+            const progressBar = document.getElementById('uploadProgress');
+            const progressFill = document.getElementById('progressFill');
+            const uploadStatus = document.getElementById('uploadStatus');
+            const resultDiv = document.getElementById('uploadResult');
+
+            // Reset UI
+            resultDiv.innerHTML = '';
+            uploadStatus.className = 'upload-status';
+            progressBar.style.display = 'block';
+            progressFill.style.width = '0%';
+            progressFill.textContent = '0%';
+            uploadButton.disabled = true;
+            uploadButton.textContent = 'Uploading...';
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            formData.append('type', document.getElementById('docType').value);
+            formData.append('version', document.getElementById('docVersion').value);
+            formData.append('importance', document.getElementById('docImportance').value);
+
+            try {
+                // Show uploading status
+                uploadStatus.className = 'upload-status uploading';
+                uploadStatus.textContent = 'Uploading and processing document...';
+
+                // Simulate progress (since we can't track actual upload progress easily)
+                let progress = 0;
+                const progressInterval = setInterval(() => {
+                    progress += 10;
+                    if (progress <= 90) {
+                        progressFill.style.width = progress + '%';
+                        progressFill.textContent = progress + '%';
+                    }
+                }, 200);
+
+                const xhr = new XMLHttpRequest();
+                
+                xhr.upload.addEventListener('progress', (e) => {
+                    if (e.lengthComputable) {
+                        const percentComplete = Math.round((e.loaded / e.total) * 90);
+                        progressFill.style.width = percentComplete + '%';
+                        progressFill.textContent = percentComplete + '%';
+                    }
+                });
+
+                xhr.addEventListener('load', () => {
+                    clearInterval(progressInterval);
+                    progressFill.style.width = '100%';
+                    progressFill.textContent = '100%';
+                    
+                    setTimeout(() => {
+                        if (xhr.status === 200 || xhr.status === 201) {
+                            const data = JSON.parse(xhr.responseText);
+                            uploadStatus.className = 'upload-status success';
+                            uploadStatus.textContent = `✅ Successfully uploaded and processed!`;
+                            resultDiv.innerHTML = `<div class="alert alert-success">
+                                <h3>✅ Upload Complete!</h3>
+                                <p><strong>File:</strong> ${data.filename}</p>
+                                <p><strong>Chunks Ingested:</strong> ${data.chunks_ingested}</p>
+                                <p><strong>Status:</strong> Document has been successfully added to the knowledge base.</p>
+                            </div>`;
+                            
+                            // Reset form after success
+                            setTimeout(() => {
+                                document.getElementById('uploadForm').reset();
+                                document.getElementById('fileName').textContent = '';
+                                progressBar.style.display = 'none';
+                                uploadStatus.className = 'upload-status';
+                            }, 3000);
+                        } else {
+                            const data = JSON.parse(xhr.responseText);
+                            uploadStatus.className = 'upload-status error';
+                            uploadStatus.textContent = '❌ Upload failed';
+                            resultDiv.innerHTML = `<div class="alert alert-error">
+                                <h3>❌ Upload Failed</h3>
+                                <p><strong>Error:</strong> ${data.error || 'Unknown error'}</p>
+                            </div>`;
+                        }
+                        uploadButton.disabled = false;
+                        uploadButton.textContent = 'Upload & Ingest';
+                    }, 500);
+                });
+
+                xhr.addEventListener('error', () => {
+                    clearInterval(progressInterval);
+                    uploadStatus.className = 'upload-status error';
+                    uploadStatus.textContent = '❌ Network error';
+                    resultDiv.innerHTML = `<div class="alert alert-error">Error: Network error occurred</div>`;
+                    uploadButton.disabled = false;
+                    uploadButton.textContent = 'Upload & Ingest';
+                    progressBar.style.display = 'none';
+                });
+
+                xhr.open('POST', '/admin/ingest-document');
+                xhr.setRequestHeader('Authorization', `Bearer ${authToken}`);
+                xhr.send(formData);
+
+            } catch (error) {
+                uploadStatus.className = 'upload-status error';
+                uploadStatus.textContent = '❌ Error occurred';
+                resultDiv.innerHTML = `<div class="alert alert-error">Error: ${error.message}</div>`;
+                uploadButton.disabled = false;
+                uploadButton.textContent = 'Upload & Ingest';
+                progressBar.style.display = 'none';
+            }
+        });
+
+        // Text form
+        document.getElementById('textForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!authToken) {
+                alert('Please authenticate first');
+                return;
+            }
+
+            const data = {
+                content: document.getElementById('textContent').value,
+                type: document.getElementById('textType').value,
+                version: document.getElementById('textVersion').value,
+                importance: document.getElementById('textImportance').value,
+                source: document.getElementById('textSource').value || 'manual_input'
+            };
+
+            try {
+                const response = await fetch('/admin/ingest-text', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+                const resultDiv = document.getElementById('textResult');
+                if (response.ok) {
+                    resultDiv.innerHTML = `<div class="alert alert-success">Success! Ingested ${result.chunks_ingested} chunks</div>`;
+                    document.getElementById('textForm').reset();
+                } else {
+                    resultDiv.innerHTML = `<div class="alert alert-error">Error: ${result.error}</div>`;
+                }
+            } catch (error) {
+                document.getElementById('textResult').innerHTML = `<div class="alert alert-error">Error: ${error.message}</div>`;
+            }
+        });
+
+        // Update form
+        document.getElementById('updateForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!authToken) {
+                alert('Please authenticate first');
+                return;
+            }
+
+            const data = {
+                rule_id: document.getElementById('ruleId').value,
+                content: document.getElementById('ruleContent').value,
+                version: document.getElementById('ruleVersion').value,
+                summary: document.getElementById('ruleSummary').value
+            };
+
+            try {
+                const response = await fetch('/admin/update-rule', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+                const resultDiv = document.getElementById('updateResult');
+                if (response.ok) {
+                    resultDiv.innerHTML = `<div class="alert alert-success">Success! Updated rule ${result.rule_id} to version ${result.version}</div>`;
+                } else {
+                    resultDiv.innerHTML = `<div class="alert alert-error">Error: ${result.error}</div>`;
+                }
+            } catch (error) {
+                document.getElementById('updateResult').innerHTML = `<div class="alert alert-error">Error: ${error.message}</div>`;
+            }
+        });
+
+        // Reflect form
+        document.getElementById('reflectForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!authToken) {
+                alert('Please authenticate first');
+                return;
+            }
+
+            const data = {
+                topic: document.getElementById('reflectTopic').value,
+                bank_type: document.getElementById('reflectBank').value
+            };
+
+            if (data.bank_type === 'product') {
+                data.product_id = document.getElementById('reflectProductId').value;
+                if (!data.product_id) {
+                    alert('Product ID required for product knowledge base');
+                    return;
+                }
+            }
+
+            try {
+                const response = await fetch('/admin/reflect', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+                const resultDiv = document.getElementById('reflectResult');
+                if (response.ok) {
+                    resultDiv.innerHTML = `<div class="alert alert-success">
+                        <h3>Reflection Generated:</h3>
+                        <pre style="white-space: pre-wrap; margin-top: 10px;">${result.reflection || 'Reflection completed'}</pre>
+                    </div>`;
+                } else {
+                    resultDiv.innerHTML = `<div class="alert alert-error">Error: ${result.error}</div>`;
+                }
+            } catch (error) {
+                document.getElementById('reflectResult').innerHTML = `<div class="alert alert-error">Error: ${error.message}</div>`;
+            }
+        });
+    </script>
+</body>
+</html>
+

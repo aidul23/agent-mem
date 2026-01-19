@@ -51,7 +51,7 @@ if ! curl -s http://localhost:8888/health > /dev/null 2>&1; then
 fi
 
 echo "✅ Starting Flask application..."
-echo "   Web interface: http://localhost:5000"
+echo "   Web interface: http://localhost:5001"
 echo ""
 
 python app.py

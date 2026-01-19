@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GPT-Lab Agent with Hindsight Memory</title>
+    <title>DfX Agent with Hindsight Memory</title>
     <style>
         * {
             margin: 0;
@@ -230,7 +230,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>GPT-Lab Agent with Hindsight Memory</h1>
+        <h1>DfX Agent with Hindsight Memory</h1>
         <p class="subtitle">A LangChain-based agent with long-term memory and explicit consent</p>
 
         <div id="consentBanner" class="consent-banner">
@@ -243,14 +243,30 @@
         </div>
 
         <div class="chat-container">
-            <div>
-                <strong>Memory Status:</strong>
-                <span id="memoryStatus" class="status-badge status-disabled">Disabled</span>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <div>
+                    <strong>Memory Status:</strong>
+                    <span id="memoryStatus" class="status-badge status-disabled">Disabled</span>
+                </div>
+                <a href="/admin" style="color: #667eea; text-decoration: none; font-weight: 600;">Admin Panel →</a>
+            </div>
+            
+            <div id="enterpriseFields" style="display: none; margin-bottom: 15px; padding: 15px; background: #f8f9ff; border-radius: 8px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-size: 14px; font-weight: 600;">Product ID (optional)</label>
+                        <input type="text" id="productId" placeholder="e.g., product-123" style="width: 100%; padding: 8px; border: 1px solid #e0e0e0; border-radius: 6px;" />
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-size: 14px; font-weight: 600;">Department (optional)</label>
+                        <input type="text" id="department" placeholder="e.g., engineering" style="width: 100%; padding: 8px; border: 1px solid #e0e0e0; border-radius: 6px;" />
+                    </div>
+                </div>
             </div>
             <div class="chat-messages" id="chatMessages">
                 <div class="message assistant">
                     <div class="message-label">Assistant</div>
-                    <div>Hello! I'm your GPT-Lab assistant. Please set your memory consent preference above to get started.</div>
+                    <div>Hello! I'm your DfX assistant. Please set your memory consent preference above to get started.</div>
                 </div>
             </div>
             <div class="input-container">
@@ -320,7 +336,7 @@
                 addMessage('system', `Memory storage ${data.allow_memory ? 'enabled' : 'disabled'}. You can now chat with the agent.`);
             } catch (error) {
                 console.error('Consent error:', error);
-                showError('Failed to set consent: ' + error.message + '. Make sure the Flask server is running on port 5000.');
+                showError('Failed to set consent: ' + error.message + '. Make sure the Flask server is running on port 5001.');
             }
         }
 
@@ -364,7 +380,9 @@
                     },
                     body: JSON.stringify({
                         user_id: USER_ID,
-                        message: message
+                        message: message,
+                        product_id: document.getElementById('productId')?.value || null,
+                        department: document.getElementById('department')?.value || null
                     })
                 });
 
@@ -404,8 +422,21 @@
             document.getElementById('errorContainer').innerHTML = '';
         }
 
+        // Check if enterprise mode is enabled
+        async function checkEnterpriseMode() {
+            try {
+                const response = await fetch(`${API_BASE}/health`);
+                const data = await response.json();
+                // Show enterprise fields (you can add a check here if needed)
+                document.getElementById('enterpriseFields').style.display = 'block';
+            } catch (error) {
+                console.log('Enterprise mode check failed, using basic mode');
+            }
+        }
+
         // Initialize
         checkConsentStatus();
+        checkEnterpriseMode();
     </script>
 </body>
 </html>
