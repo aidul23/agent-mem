@@ -1,4 +1,4 @@
-# GPT-Lab Agent with Hindsight Memory
+# Dfx Agent with Hindsight Memory
 
 A LangChain-based agent that uses Hindsight as long-term memory with explicit user consent for data storage.
 
@@ -126,7 +126,7 @@ The web interface will be available at `http://localhost:5001`
 1. User sends a message
 2. Agent recalls relevant memories from Hindsight (if consent given)
 3. Memories are injected into the system prompt
-4. Agent generates response using LangChain
+4. Agent generates a response using LangChain
 5. Interaction is stored in Hindsight (if consent given)
 
 ### Consent Model
